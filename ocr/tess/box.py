@@ -14,7 +14,7 @@ class BoxLine(object):
         try:
             letter, left, bottom, right, top, page = line.split(' ')
         except ValueError as e:
-            sys.stderr.write('Bad line: "%s"' % line)
+            sys.stderr.write(f'Bad line: "{line}"')
             raise e
         return BoxLine(letter, left, top, right, bottom, page)
 
@@ -33,8 +33,5 @@ def load_box_file(path):
 
     Output is a list of BoxLines.
     """
-    out = []
-    for line in open(path):
-        out.append(BoxLine.parse_line(line))
-    return out
+    return [BoxLine.parse_line(line) for line in open(path)]
 

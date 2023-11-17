@@ -42,10 +42,11 @@ class HeadRequest(urllib2.Request):
 def GetRedirect(url):
   location_header = 'location: '
   output = subprocess.check_output(['curl', '--silent', '-I', url])
-  for line in output.split('\n'):
-    if line.startswith(location_header):
-      return line[len(location_header):].strip()
-  return None
+  return next(
+      (line[len(location_header):].strip()
+       for line in output.split('\n') if line.startswith(location_header)),
+      None,
+  )
 
 
 rs = record.AllRecords('records.pickle')

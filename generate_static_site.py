@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''Generate a static version of oldnyc.org consisting entirely of JSON.'''
 
+
 import chardet
 from collections import defaultdict, OrderedDict
 import csv
@@ -33,10 +34,10 @@ lat_lon_to_ids = json.loads(open('viewer/static/js/nyc-lat-lons-ny.js', 'rb').re
 rs = record.AllRecords('nyc/photos.pickle')
 id_to_record = {r.photo_id(): r for r in rs}
 
-id_to_dims = {}
-for photo_id, width, height in csv.reader(open('nyc-image-sizes.txt')):
-    id_to_dims[photo_id] = (int(width), int(height))
-
+id_to_dims = {
+    photo_id: (int(width), int(height))
+    for photo_id, width, height in csv.reader(open('nyc-image-sizes.txt'))
+}
 # rotated images based on user feedback
 user_rotations = json.load(open('analysis/rotations/rotations.json'))
 id_to_rotation = user_rotations['fixes']
@@ -69,13 +70,10 @@ back_id_to_text = None  # clear
 
 
 def image_url(photo_id, is_thumb):
-    degrees = id_to_rotation.get(photo_id)
-    if not degrees:
-        return 'http://oldnyc-assets.nypl.org/%s/%s.jpg' % (
-            'thumb' if is_thumb else '600px', photo_id)
+    if degrees := id_to_rotation.get(photo_id):
+        return f"http://www.oldnyc.org/rotated-assets/{'thumb' if is_thumb else '600px'}/{photo_id}.{degrees}.jpg"
     else:
-        return 'http://www.oldnyc.org/rotated-assets/%s/%s.%s.jpg' % (
-            'thumb' if is_thumb else '600px', photo_id, degrees)
+        return f"http://oldnyc-assets.nypl.org/{'thumb' if is_thumb else '600px'}/{photo_id}.jpg"
 
 
 def decode(b):
@@ -136,7 +134,7 @@ latlon_to_count = {}
 id4_to_latlon = defaultdict(lambda: {})  # first 4 of id -> id -> latlon
 textless_photo_ids = []
 for latlon, photo_ids in lat_lon_to_ids.iteritems():
-    outfile = '../oldnyc.github.io/by-location/%s.json' % latlon.replace(',', '')
+    outfile = f"../oldnyc.github.io/by-location/{latlon.replace(',', '')}.json"
     response = make_response(photo_ids)
     latlon_to_count[latlon] = len(response)
     json.dump(response, open(outfile, 'wb'), indent=2)
@@ -163,9 +161,11 @@ with open('../oldnyc.github.io/lat-lon-counts.js', 'wb') as f:
     f.write('var lat_lons = %s;' % json.dumps(latlon_to_count, indent=2))
 
 for id4, id_to_latlon in id4_to_latlon.iteritems():
-    json.dump(id_to_latlon,
-              open('../oldnyc.github.io/id4-to-location/%s.json' % id4, 'wb'),
-              indent=2)
+    json.dump(
+        id_to_latlon,
+        open(f'../oldnyc.github.io/id4-to-location/{id4}.json', 'wb'),
+        indent=2,
+    )
 
 # List of photos IDs without backing text
 json.dump({

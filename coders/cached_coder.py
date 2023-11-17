@@ -7,7 +7,7 @@ import cPickle
 class CachedCoder:
   def __init__(self, name):
     self._name = name
-    unpickler = cPickle.Unpickler(open('/tmp/coder.%s.pickle' % name, 'r'))
+    unpickler = cPickle.Unpickler(open(f'/tmp/coder.{name}.pickle', 'r'))
     recs = unpickler.load()
     self._recs = {}
 
@@ -15,8 +15,7 @@ class CachedCoder:
       self._recs[photo_id] = loc
 
   def codeRecord(self, r):
-    if r.photo_id() not in self._recs: return None
-    return self._recs[r.photo_id()]
+    return None if r.photo_id() not in self._recs else self._recs[r.photo_id()]
 
   def name(self):
     return self._name

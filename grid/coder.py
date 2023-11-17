@@ -17,20 +17,14 @@ for row in csv.DictReader(open('grid/intersections.csv')):
     street = int(row['Street'])
     lat = float(row['Lat'])
     lon = float(row['Lon'])
-    if avenue <= 0:
-        avenue = ['A', 'B', 'C', 'D'][-avenue]
-    else:
-        avenue = str(avenue)
+    avenue = ['A', 'B', 'C', 'D'][-avenue] if avenue <= 0 else str(avenue)
     by_avenue[avenue][street] = (lat, lon)
     by_street[street][avenue] = (lat, lon)
 
 
 AVE_TO_NUM = {'A': 0, 'B': -1, 'C': -2, 'D': -3}
 def ave_to_num(ave):
-    if ave in AVE_TO_NUM:
-        return AVE_TO_NUM[ave]
-    else:
-        return int(ave)
+    return AVE_TO_NUM[ave] if ave in AVE_TO_NUM else int(ave)
 
 
 def correl(xs_list, ys_list):
@@ -102,12 +96,7 @@ def may_extrapolate(avenue, street):
     # This cuts out the West Village and 4th Avenue south of 14th Street.
     # Streets are crooked there.
     # Valid intersections in those areas should be exact.
-    if str_num <= 14 and ave_num > 2:
-        return False
-    # Avenues B, C and D should not extend above 23rd. They'd be underwater!
-    elif str_num >= 23 and ave_num < 0:
-        return False
-    return True
+    return (str_num > 14 or ave_num <= 2) and (str_num < 23 or ave_num >= 0)
 
 
 num_exact = 0
@@ -128,9 +117,7 @@ def code(avenue, street):
         num_unclaimed += 1
         return None
 
-    # First look for an exact match.
-    exact = crosses.get(int(street))
-    if exact:
+    if exact := crosses.get(int(street)):
         num_exact += 1
         return (exact[0], exact[1])
 

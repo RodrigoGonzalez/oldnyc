@@ -13,7 +13,7 @@ def make_ordinal(n):
 
 def make_street_str(street):
     '''1 -> 1st Street'''
-    return make_ordinal(street) + ' street'
+    return f'{make_ordinal(street)} street'
 
 
 def make_avenue_str(avenue, street=0):
@@ -38,7 +38,7 @@ def make_avenue_str(avenue, street=0):
     elif avenue == 11 and street >= 59:
         return 'West End Avenue'
     else:
-        return make_ordinal(avenue) + ' Avenue'
+        return f'{make_ordinal(avenue)} Avenue'
 
 
 '''
@@ -59,16 +59,14 @@ def locate(avenue, street):
     '''
     street_str = make_street_str(street)
     avenue_str = make_avenue_str(avenue, street)
-    response = g.Locate('%s and %s, Manhattan, NY' % (street_str, avenue_str))
+    response = g.Locate(f'{street_str} and {avenue_str}, Manhattan, NY')
 
     r = response['results'][0]
     if r['types'] != ['intersection']: return None
     if r.get('partial_match'): return None  # may be inaccurate
 
     loc = r['geometry']['location']
-    lat_lon = loc['lat'], loc['lng']
-
-    return lat_lon
+    return loc['lat'], loc['lng']
 
 if __name__ == '__main__':
     g = geocoder.Geocoder(True, 1)  # use network, 1s wait time.

@@ -18,17 +18,17 @@ PORT_NUMBER = 8765
 tasklist = Queue.Queue()
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-  def do_GET(s):
+  def do_GET(self):
     """Respond to a GET request."""
     global tasklist
     if not tasklist.empty():
-      s.send_response(200)
-      s.send_header("Content-type", "text/plain")
-      s.end_headers()
-      s.wfile.write(tasklist.get())
+      self.send_response(200)
+      self.send_header("Content-type", "text/plain")
+      self.end_headers()
+      self.wfile.write(tasklist.get())
     else:
-      s.send_response(404)
-      s.end_headers()
+      self.send_response(404)
+      self.end_headers()
 
 
 def keep_running():

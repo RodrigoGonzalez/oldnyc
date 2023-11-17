@@ -62,5 +62,5 @@ def saveItem(csvWriter, item):
 
 query = UserFeedback.gql("ORDER BY datetime") #Query for items
 exportToCsv(query, 'user-feedback.csv', ',')
-archive_file = 'user-feedback.%s.csv' % time.strftime('%Y-%m-%dT%H-%M-%S')
+archive_file = f"user-feedback.{time.strftime('%Y-%m-%dT%H-%M-%S')}.csv"
 open(archive_file, 'w').write(open('user-feedback.csv').read())

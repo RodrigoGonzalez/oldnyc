@@ -4,20 +4,18 @@
 Manhattan: 8th Avenue - 24th Street (West)
 '''
 
+
 import fileinput
 import re
 
 boros = r'(?:New York|Manhattan|Brooklyn|Bronx|Queens|Staten Island|Richmond)'
 streets = r'(?:St\.|Street|Place|Pl\.|Road|Rd\.|Avenue|Ave\.|Av\.|Boulevard|Blvd\.?|Broadway|Parkway|Pkwy\.?|Pky\.?|Street \(West\)|Street \(East\)|Drive|Lane)'
 
-patterns = [
-    boros + r': ([^-,]*?) - ([^-,]*?)$'
-]
+patterns = [f'{boros}: ([^-,]*?) - ([^-,]*?)$']
 
 def is_pure_location(title):
     for pattern in patterns:
-        m = re.match(pattern, title)
-        if m:
+        if m := re.match(pattern, title):
             street1, street2 = m.groups()
             if re.search(streets, street1) and re.search(streets, street2):
                 return True

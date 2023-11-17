@@ -10,7 +10,7 @@ def box_widths(boxes, path):
     counts = defaultdict(int)
     for box in boxes:
         width = box.right - box.left
-        if 16 <= width and width <= 19:
+        if 16 <= width <= 19:
             sys.stderr.write('%s: %s %s\n' % (width, path, box))
         counts[width] += 1
     return counts

@@ -192,9 +192,7 @@ def PointInPolygon(point, polygon):
   try:
     # [ [[lon,lat]] ] vs. [[lon, lat]]
     x = iter(polygon[0][0])
-    for p in polygon:
-      if PointInPolygon(point, p): return True
-    return False
+    return any(PointInPolygon(point, p) for p in polygon)
   except TypeError as e:
     for p in polygon:
       assert len(p) == 2, p

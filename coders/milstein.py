@@ -11,7 +11,7 @@ import json
 import nyc.boroughs
 
 if __name__ == '__main__':
-  sys.path += (sys.path[0] + '/..')
+  sys.path += f'{sys.path[0]}/..'
 
 import coders.registration
 import record
@@ -24,15 +24,15 @@ streets = '(?:St\.|Street|Place|Pl\.|Road|Rd\.|Avenue|Ave\.|Av\.|Boulevard|Blvd\
 
 # example: "100th Street (East) & 1st Avenue, Manhattan, NY"
 # 30337 / 36328 (0.8351)
-cross_and_re = r'(.*) (?:&|and|at) (.*), (%s)' % boros
+cross_and_re = f'(.*) (?:&|and|at) (.*), ({boros})'
 
 # example: "38th Street (West) - Twelfth Avenue, Manhattan, NY"
 #  1616 / 36328 (0.0445)
-cross_dash_re = r'([^-,]*?) - ([^-,]*?)(?:[-,].*)?, (%s)' % boros
+cross_dash_re = f'([^-,]*?) - ([^-,]*?)(?:[-,].*)?, ({boros})'
 
 # example: "York Avenue #1646-50 - 87th Street looking southeast, Manhattan, NY"
 #   225
-address1_re = r'(.*? %s) #([0-9]+).*(%s)' % (streets, boros)
+address1_re = f'(.*? {streets}) #([0-9]+).*({boros})'
 
 # example: "929 Park Avenue. Near Eighty-first Street., Manhattan, NY"
 #   313
@@ -81,11 +81,11 @@ class MilsteinCoder:
     if m:
       crosses = sorted([m.group(1), m.group(2)])
       return {
-          'address': '%s and %s, %s' % (crosses[0], crosses[1], m.group(3)),
+          'address': f'{crosses[0]} and {crosses[1]}, {m.group(3)}',
           'source': loc,
-          'type': 'intersection'
+          'type': 'intersection',
       }
-    
+
     for pattern in addr_patterns:
       m = re.match(pattern, loc)
       if m: break
@@ -99,22 +99,18 @@ class MilsteinCoder:
         number, street = street, number
 
       return {
-          'address': '%s %s, %s' % (number, street, city),
+          'address': f'{number} {street}, {city}',
           'source': loc,
-          'type': 'street_address'
+          'type': 'street_address',
       }
-    
+
     for pattern in place_patterns:
       m = re.match(pattern, loc)
       if m: break
     if m:
       place, city = m.groups()
       place = re.sub(ps_cleanup_re, r'Public School \1', place)
-      return {
-          'address': '%s, %s' % (place, city),
-          'source': loc,
-          'type': 'street_address'  # or 'point_of_interest' or 'establishment'
-      }
+      return {'address': f'{place}, {city}', 'source': loc, 'type': 'street_address'}
 
     sys.stderr.write('(%s) Bad location: %s\n' % (r.photo_id(), loc));
     return None
@@ -122,8 +118,7 @@ class MilsteinCoder:
 
   def _extractLocationStringFromRecord(self, r):
     raw_loc = r.location().strip()
-    loc = re.sub(r'^[ ?\t"\[]+|[ ?\t"\]]+$', '', raw_loc)
-    return loc
+    return re.sub(r'^[ ?\t"\[]+|[ ?\t"\]]+$', '', raw_loc)
 
 
   def _getLatLonFromGeocode(self, geocode, data):
@@ -138,7 +133,7 @@ class MilsteinCoder:
 
   def _getBoroughFromAddress(self, address):
     m = re.search(boros_re, address)
-    assert m, 'Failed to find borough in "%s"' % address
+    assert m, f'Failed to find borough in "{address}"'
     record_boro = m.group(1)
     if record_boro == 'New York':
       record_boro = 'Manhattan'

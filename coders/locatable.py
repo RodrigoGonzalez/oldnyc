@@ -35,8 +35,7 @@ class Locatable(object):
     self._latlon = 'unknown'
 
   def __str__(self):
-    if not self.source: return ''
-    return self.source
+    return '' if not self.source else self.source
 
   def getLatLon(self, g=None):
     """Returns either a (lat, lon) tuple or None."""
@@ -61,10 +60,7 @@ def fromLatLon(lat, lon, source=None):
   l.loc_type = LAT_LON
   l.lat = lat
   l.lon = lon
-  if source:
-    l.source = source
-  else:
-    l.source = '@' + lat + ',' + lon
+  l.source = source if source else f'@{lat},{lon}'
   return l
 
 
@@ -72,17 +68,14 @@ def fromAddress(address, city=None, source=None):
   l = Locatable()
   l.loc_type = ADDRESS
   l.address = address
-  if source:
-    l.source = source
-  else:
-    l.source = address
+  l.source = source if source else address
   if city:
     l.city = city
   return l
 
 
 def fromBlock(block, street, source=None):
-  assert 0 == block % 100, 'Block not divisible by 100! %s' % source
+  assert 0 == block % 100, f'Block not divisible by 100! {source}'
   l = Locatable()
   l.loc_type = BLOCK
   l.block_num = block
@@ -98,10 +91,7 @@ def fromTiny(tiny, source=None):
   l = Locatable()
   l.loc_type = TINY
   l.tiny = tiny
-  if source:
-    l.source = source
-  else:
-    l.source = tiny
+  l.source = source if source else tiny
   return l
 
 
@@ -109,10 +99,7 @@ def fromCross(street1, street2, source=None, city=None):
   l = Locatable()
   l.loc_type = CROSSES
   l.crosses = [ sorted([street1, street2]) ]
-  if source:
-    l.source = source
-  else:
-    l.source = '%s and %s' % (street1, street2)
+  l.source = source if source else f'{street1} and {street2}'
   if city:
     l.city = city
   return l
@@ -124,11 +111,10 @@ def fromStreetAndCrosses(street1, crosses, source=None):
   l.crosses = [ sorted([street1, street2]) for street2 in crosses]
   if source:
     l.source = source
+  elif len(crosses) == 1:
+    l.source = f'{street1} and {crosses[0]}'
   else:
-    if len(crosses) == 1:
-      l.source = '%s and %s' % (street1, crosses[0])
-    else:
-      l.source = '%s and [%s]' % (street1, ', '.join(crosses))
+    l.source = f"{street1} and [{', '.join(crosses)}]"
   return l
 
 
@@ -139,7 +125,7 @@ def fromCrosses(crosses, source=None):
   if source:
     l.source = source
   else:
-    l.source = ', '.join(['%s and %s' % (a,b) for a,b in crosses])
+    l.source = ', '.join([f'{a} and {b}' for a,b in crosses])
   return l
 
 
@@ -151,9 +137,9 @@ def GetAverageLatLon(lat_lons):
   # within half a mile. For reference, Folsom&4th to Folsom&5th is 0.17 miles.
   ds = []
   for i in range(len(lat_lons)):
-    for j in range(i + 1, len(lat_lons)):
-      ds.append(LatLonDistance(lat_lons[i][0], lat_lons[i][1], lat_lons[j][0], lat_lons[j][1]))
-
+    ds.extend(
+        LatLonDistance(lat_lons[i][0], lat_lons[i][1], lat_lons[j][0],
+                       lat_lons[j][1]) for j in range(i + 1, len(lat_lons)))
   d = max(ds)
   if d > 0.5: return None
 
@@ -170,9 +156,7 @@ def GetAverageLatLon(lat_lons):
 def InSF(lat, lon):
   if lat < 37.684907 or lon < -122.517471:  # sw -- in the ocean south of the zoo
     return False
-  if lat > 37.833649 or lon > -122.35817:  # ne -- just off the edge of Treasure Island
-    return False
-  return True
+  return lat <= 37.833649 and lon <= -122.35817
 
 
 def InNYC(lat, lon):
@@ -188,8 +172,7 @@ def Locate(g, addr, suffix=None):
     return None
   if x.is_fake():
     return None
-  if not InSF(x.lat, x.lon) and not InNYC(x.lat, x.lon): return None
-  return x
+  return None if not InSF(x.lat, x.lon) and not InNYC(x.lat, x.lon) else x
 
 
 def LatLonDistance(lat1, lon1, lat2, lon2):
@@ -203,8 +186,7 @@ def LatLonDistance(lat1, lon1, lat2, lon2):
   a = math.sin(dLat/2) * math.sin(dLat/2) + \
       math.sin(dLon/2) * math.sin(dLon/2) * math.cos(lat1) * math.cos(lat2);
   c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a));
-  d = R * c
-  return d
+  return R * c
 
 
 def locateAddress(g, address, city):
@@ -216,24 +198,22 @@ def locateAddress(g, address, city):
 
 
 def locateBlock(g, block_num, block_street):
-  loc_str = str(block_num + 50) + ' ' + block_street
+  loc_str = f'{str(block_num + 50)} {block_street}'
   x = Locate(g, loc_str)
-  if not x or x.accuracy != 8:
-    sys.stderr.write('Failure: %s -> %s\n' % (loc_str, x))
-    return None
-  else:
+  if x and x.accuracy == 8:
     return (x.lat, x.lon)
+  sys.stderr.write('Failure: %s -> %s\n' % (loc_str, x))
+  return None
 
 
 def locateTiny(g, tiny):
   loc = tiny
-  if not ' ' in loc: loc += ' street'
+  if ' ' not in loc: loc += ' street'
   x = Locate(g, loc)
-  if not x or x.accuracy != 6:
-    sys.stderr.write('Failure: %s -> %s\n' % (loc, x))
-    return None
-  else:
+  if x and x.accuracy == 6:
     return (x.lat, x.lon)
+  sys.stderr.write('Failure: %s -> %s\n' % (loc, x))
+  return None
 
 
 # These intersections/streets have changed names since the photos were taken.

@@ -25,7 +25,7 @@ def getBackOfPhotoUrl(record_or_photo_id):
     if not re.match(r'[0-9]+f', photo_id):
         raise NothingOnBackError()
 
-    return 'http://images.nypl.org/?id=%s&t=w' % photo_id.replace('f', 'b')
+    return f"http://images.nypl.org/?id={photo_id.replace('f', 'b')}&t=w"
 
 
 if __name__ == '__main__':

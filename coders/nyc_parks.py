@@ -10,7 +10,7 @@ import sys
 import json
 
 if __name__ == '__main__':
-  sys.path += (sys.path[0] + '/..')
+  sys.path += f'{sys.path[0]}/..'
 
 import coders.registration
 import record
@@ -209,7 +209,7 @@ beaches = {
 # - Midland Beach, Staten Island, NY
 
 boros_re = '(?:New York|Manhattan|Brooklyn|Bronx|Queens|Staten Island)'
-park_re = r'^%s: ([A-Za-z ]+ Park)(?: |$)' % boros_re
+park_re = f'^{boros_re}: ([A-Za-z ]+ Park)(?: |$)'
 non_parks_re = r'Park (?:Avenue|West|East|North|South|Court|Place|Row|Terrace|Blvd|Boulevard)'
 
 island_re = r'^Islands - ([A-Za-z ]+) '
@@ -227,8 +227,7 @@ class NycParkCoder:
     if r.source() != 'Milstein Division': return None
     title = re.sub(r'\.$', '', r.title())
 
-    m = re.search(park_re, title)
-    if m:
+    if m := re.search(park_re, title):
       park = m.group(1)
       if not re.search(non_parks_re, title):
         if park not in parks:
@@ -237,7 +236,7 @@ class NycParkCoder:
           latlon = None
           if park == 'Central Park':
             for place in central_park:
-              if ('Central Park - %s' % place) in title:
+              if f'Central Park - {place}' in title:
                 latlon = central_park[place]
           if not latlon:
             latlon = parks[park]
@@ -246,9 +245,8 @@ class NycParkCoder:
               'source': m.group(0),
               'type': 'point_of_interest'
           }
-    
-    m = re.search(island_re, title)
-    if m:
+
+    if m := re.search(island_re, title):
       island = m.group(1)
       if island not in islands:
         missing_islands[island] += 1
@@ -260,10 +258,9 @@ class NycParkCoder:
             'type': 'point_of_interest'
         }
 
-    m = re.search(bridge_re, title)
-    if m:
+    if m := re.search(bridge_re, title):
       bridge = m.group(1)
-      if not 'Bridge' in bridge or 'bridge' in bridge:
+      if 'Bridge' not in bridge or 'bridge' in bridge:
         bridge += ' Bridge'
       if bridge not in bridges:
         missing_bridges[bridge] += 1
@@ -286,9 +283,7 @@ class NycParkCoder:
 
   def getLatLonFromGeocode(self, geocode, data, r):
     latlon = self._getLatLonFromGeocode(geocode, data)
-    if not latlon:
-      return None
-    return latlon
+    return None if not latlon else latlon
 
   def finalize(self):
     for missing in [missing_parks, missing_islands, missing_bridges]:

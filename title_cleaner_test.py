@@ -23,4 +23,4 @@ TRUTH = [
 
 def test_clean_title():
     for correct, title in TRUTH:
-        assert correct == title_cleaner.is_pure_location(title), '%s %s' % (correct, title)
+        assert correct == title_cleaner.is_pure_location(title), f'{correct} {title}'

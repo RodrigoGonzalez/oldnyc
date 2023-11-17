@@ -34,10 +34,11 @@ def PointToBorough(lat, lon):
     boroughs = json.load(file(_getBoroughJsonPath()))
 
   pt = (lon, lat)
-  for k, v in boroughs.iteritems():
-    if shape_utils.PointInPolygon(pt, v):
-      return k
-  return None
+  return next(
+      (k
+       for k, v in boroughs.iteritems() if shape_utils.PointInPolygon(pt, v)),
+      None,
+  )
 
 
 def PointToNeighborhood(lat, lon):

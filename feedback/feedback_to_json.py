@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Convert CSV feedback to JSON for Firebase import."""
 
+
 from collections import defaultdict
 import csv
 import dateutil.parser
@@ -11,7 +12,17 @@ import time
 
 import firebase_pushid
 
-types = set(['rotate', 'large-border', 'text', 'wrong-location', 'multiples', 'notext', 'rotate-backing', 'date', 'cut-in-half'])
+types = {
+    'rotate',
+    'large-border',
+    'text',
+    'wrong-location',
+    'multiples',
+    'notext',
+    'rotate-backing',
+    'date',
+    'cut-in-half',
+}
 
 def iso8601_to_millis(iso8601):
     dt = dateutil.parser.parse(iso8601)

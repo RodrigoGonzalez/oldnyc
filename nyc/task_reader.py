@@ -16,11 +16,9 @@ def Tasks():
     url = sys.argv[1]
     try:
       while True:
-        task = subprocess.check_output(['curl', '--silent', url]).strip()
-        yield task
+        yield subprocess.check_output(['curl', '--silent', url]).strip()
     except subprocess.CalledProcessError:
       # Done, we hope!
       pass
   else:
-    for task in fileinput.input():
-      yield task
+    yield from fileinput.input()

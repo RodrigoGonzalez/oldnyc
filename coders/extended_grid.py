@@ -50,10 +50,10 @@ def parse_street_ave(street1, street2):
         street2, street1 = street1, street2
 
     if not re.search(r'ave', street1, flags=re.I):
-        raise ValueError('%s is not an avenue' % street1)
+        raise ValueError(f'{street1} is not an avenue')
 
     if not re.search(r'str|st\.', street2, flags=re.I):
-        raise ValueError('%s is not a street' % street2)
+        raise ValueError(f'{street2} is not a street')
 
     street1 = remove_parens(street1)
     street2 = remove_parens(street2)
@@ -61,26 +61,23 @@ def parse_street_ave(street1, street2):
 
     # pull the number from the street string
     num = extract_ordinal(street2)
-    if num == None:
-        raise ValueError('Unable to find a number in %s' % street2)
+    if num is None:
+        raise ValueError(f'Unable to find a number in {street2}')
     street2 = num
 
     # Try the same for the avenue
     num = extract_ordinal(street1)
     if num != None:
         street1 = str(num)
+    elif m := re.search(r'[aA]venue (A|B|C|D)', street1):
+        street1 = m.group(1)
     else:
-        # Look for something like 'Avenue A'
-        m = re.search(r'[aA]venue (A|B|C|D)', street1)
-        if m:
-            street1 = m.group(1)
+        # How about 'Fourth', 'Fifth'?
+        num = multisearch(ORDINALS, street1)
+        if num is not None:
+            street1 = str(num)
         else:
-            # How about 'Fourth', 'Fifth'?
-            num = multisearch(ORDINALS, street1)
-            if num is not None:
-                street1 = str(num)
-            else:
-                raise ValueError('Did not find an avenue in %s' % street1)
+            raise ValueError(f'Did not find an avenue in {street1}')
 
     return street1, street2
 
@@ -96,10 +93,10 @@ def extract_ordinal(txt):
 
 def multisearch(re_dict, txt):
     '''Search for any of the keys. Given a match, return the value.'''
-    for k, v in re_dict.iteritems():
-        if re.search(k, txt, flags=re.I):
-            return v
-    return None
+    return next(
+        (v for k, v in re_dict.iteritems() if re.search(k, txt, flags=re.I)),
+        None,
+    )
 
 
 class ExtendedGridCoder:
@@ -110,14 +107,13 @@ class ExtendedGridCoder:
   
     def _extractLocationStringFromRecord(self, r):
         raw_loc = r.location().strip()
-        loc = re.sub(r'^[ ?\t"\[]+|[ ?\t"\]]+$', '', raw_loc)
-        return loc
+        return re.sub(r'^[ ?\t"\[]+|[ ?\t"\]]+$', '', raw_loc)
   
     def codeRecord(self, r):
         if r.source() != 'Milstein Division': return None
-  
+
         loc = self._extractLocationStringFromRecord(r)
-  
+
         m = None
         for pattern in self._cross_patterns:
             m = re.match(pattern, loc)
@@ -147,17 +143,17 @@ class ExtendedGridCoder:
             # This incorrectly puts it in the middle of Central Park!
             avenue, street = '7', '130'
 
-        latlon = coder.code(avenue, street)
-        if not latlon: return None
+        if latlon := coder.code(avenue, street):
+                # sys.stderr.write('coded (%s, %s) --> (%s, %s)\n' % (street1, street2, avenue, street))
 
-        # sys.stderr.write('coded (%s, %s) --> (%s, %s)\n' % (street1, street2, avenue, street))
-
-        return {
-            'address': '@%s,%s' % latlon,
-            'source': loc,
-            'grid': '(%s, %s)' % (avenue, street),
-            'type': 'intersection'
-        }
+            return {
+                'address': '@%s,%s' % latlon,
+                'source': loc,
+                'grid': f'({avenue}, {street})',
+                'type': 'intersection',
+            }
+        else:
+            return None
 
     def getLatLonFromGeocode(self, geocode, data, r):
         for result in geocode['results']:

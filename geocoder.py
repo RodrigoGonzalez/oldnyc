@@ -31,7 +31,7 @@ def _cache_file(loc):
   key = base64.b64encode(loc)[:-2]  # minus the trailing '=='
   key = key.replace('/', '-')  # '/' is bad in a file name.
   key = key[:255]  # longest possible filename
-  return "%s/%s" % (CacheDir, key)
+  return f"{CacheDir}/{key}"
 
 
 class Geocoder:
@@ -70,8 +70,7 @@ class Geocoder:
 
   def _check_for_lat_lon(self, address):
     """For addresses of the form "@(lat),(lon)", skip the geocoder."""
-    m = re.match(r'@([-0-9.]+),([-0-9.]+)$', address)
-    if m:
+    if m := re.match(r'@([-0-9.]+),([-0-9.]+)$', address):
       return FakeResponse % (m.group(1), m.group(2))
 
   def Locate(self, address, check_cache=True):
@@ -112,13 +111,12 @@ class Geocoder:
 
   def InCache(self, loc):
     data = self._check_cache(loc)
-    return data == None
+    return data is None
 
   def LocateFromCache(self, loc):
     """Like Locate, but never goes to the network to get a location."""
     data = self._check_cache(loc)
-    if not data: return None
-    return json.loads(data)
+    return None if not data else json.loads(data)
 
 
 if __name__ == '__main__':

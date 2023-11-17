@@ -26,7 +26,7 @@ def ExtractPhotos(d, output_dir):
     base, ext = os.path.splitext(os.path.basename(d['file']))
     for idx, rect in enumerate(rects):
       char = chr(ord('a') + idx)
-      output_path = os.path.join(output_dir, '%s-%s%s' % (base, char, ext))
+      output_path = os.path.join(output_dir, f'{base}-{char}{ext}')
       w = rect['right'] - rect['left']
       h = rect['bottom'] - rect['top']
       output = subprocess.check_output([

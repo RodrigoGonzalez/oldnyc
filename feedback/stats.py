@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Print out stats on user feedback."""
 
+
 import json
 import csv
 import sys
@@ -12,7 +13,17 @@ start_date = '2015-06-01'
 skipped = 0
 count = 0
 
-types = set(['rotate', 'large-border', 'text', 'wrong-location', 'multiples', 'notext', 'rotate-backing', 'date', 'cut-in-half'])
+types = {
+    'rotate',
+    'large-border',
+    'text',
+    'wrong-location',
+    'multiples',
+    'notext',
+    'rotate-backing',
+    'date',
+    'cut-in-half',
+}
 type_counts = defaultdict(int)
 date_counts = defaultdict(int)
 

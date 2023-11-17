@@ -32,10 +32,7 @@ print 'Last OCR update: %s' % last_timestamp
 badwords = ['http', 'www', 'shit', 'cunt', 'fuck']
 
 def likely_spam(text):
-    for word in badwords:
-        if word in text:
-            return True
-    return False
+    return any(word in text for word in badwords)
 
 
 def unix_time_millis(date_str):

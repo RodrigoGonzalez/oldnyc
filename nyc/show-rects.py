@@ -6,12 +6,11 @@ import json
 import os
 import csv
 
-rect_map = {}
-for row in csv.DictReader(file('testdata/outputs.csv')):
-  rect_map[row['image_url']] = json.loads(row['rects'])
-
-i = 0
-for path, rects in rect_map.iteritems():
+rect_map = {
+    row['image_url']: json.loads(row['rects'])
+    for row in csv.DictReader(file('testdata/outputs.csv'))
+}
+for i, (path, rects) in enumerate(rect_map.iteritems()):
   orig_im = Image.open(path)
   w, h = orig_im.size
 
@@ -34,4 +33,3 @@ for path, rects in rect_map.iteritems():
       pix[x2 - 1, y] = (255, 0, 0)
 
   orig_im.show()
-  i += 1

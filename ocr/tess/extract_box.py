@@ -25,17 +25,16 @@ def path_for_letter(output_dir, image_path, idx, letter):
     safe_char = letter.replace(r'[^a-zA-Z0-9.,"\'\[\]\(\)]', '')
     letter = '%03d-%s' % (ord(letter), safe_char)
 
-    return os.path.join(output_dir, letter), '%s.%s.png' % (image_base, idx)
+    return os.path.join(output_dir, letter), f'{image_base}.{idx}.png'
 
 
 # From http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
-  try:
-    os.makedirs(path)
-  except OSError as exc: # Python >2.5
-    if exc.errno == errno.EEXIST:
-      pass
-    else: raise
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno != errno.EEXIST:
+            raise
 
 
 if __name__ == '__main__':

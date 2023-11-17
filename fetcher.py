@@ -12,9 +12,8 @@ def mkdir_p(path):
   try:
     os.makedirs(path)
   except OSError as exc: # Python >2.5
-    if exc.errno == errno.EEXIST:
-      pass
-    else: raise
+    if exc.errno != errno.EEXIST:
+      raise
 
 
 class Fetcher:
@@ -49,10 +48,7 @@ class Fetcher:
 
   def InCache(self, url):
     """Is the URL in the cache?"""
-    if os.path.exists(self.CacheFile(url)):
-      return True
-    else:
-      return False
+    return bool(os.path.exists(self.CacheFile(url)))
 
 
   def FetchFromCache(self, url):
@@ -64,7 +60,7 @@ class Fetcher:
     mkdir_p(self._cache_dir)
     key = hashlib.md5(url).hexdigest()
     base, ext = os.path.splitext(url)
-    return "%s/%s%s" % (self._cache_dir, key, ext)
+    return f"{self._cache_dir}/{key}{ext}"
 
   def _check_cache(self, url):
     """Returns cached results for the location or None if not available."""

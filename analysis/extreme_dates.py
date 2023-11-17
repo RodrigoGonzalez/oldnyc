@@ -19,8 +19,7 @@ def extract_dates(date_str):
 
 
 def mkurl(r):
-    return 'http://digitalcollections.nypl.org/items/image_id/%s' % (
-            re.sub(r'-[a-z]$', '', r.photo_id()))
+    return f"http://digitalcollections.nypl.org/items/image_id/{re.sub('-[a-z]$', '', r.photo_id())}"
 
 
 if __name__ == '__main__':

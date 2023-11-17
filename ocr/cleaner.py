@@ -60,8 +60,8 @@ def merge_lines(txt):
         return txt  # be conservative
 
     txt = ''
+    is_hyphen = False
     for i, line in enumerate(lines):
-        is_hyphen = False
         if line.endswith('-'):
             # A hyphen at end of line is an automatic join.
             txt += line[:-1]

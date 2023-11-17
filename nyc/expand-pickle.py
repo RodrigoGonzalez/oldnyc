@@ -3,6 +3,7 @@
 
 Each photo extracted from the original image gets its own record in the new pickle.'''
 
+
 import os, sys
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,parentdir) 
@@ -27,12 +28,12 @@ num_images, num_photos = 0, 0
 
 for idx, r in enumerate(rs):
   digital_id = r.photo_id()
-  image_file = '%s.jpg' % digital_id
+  image_file = f'{digital_id}.jpg'
   if image_file not in expansions:
     # XXX: why skip any images?
     skipped += 1
     continue
-  
+
   num_images += 1
 
   if len(expansions[image_file]) == 0:
@@ -52,6 +53,6 @@ for idx, r in enumerate(rs):
 
   if num_photos % 1000 == 0:
     sys.stderr.write('Dumped %d images / %d photos\n' % (num_images, num_photos))
-  
+
 
 sys.stderr.write('Skipped %d records\n' % skipped)
